@@ -93,13 +93,11 @@ func IsPwned(password string) (*Result, error) {
 		return nil, err
 	}
 
+	// Checks if result has matching hash
 	for i := range results {
-		result := results[i]
-		if result.Sha1Hash != hash {
-			continue
+		if results[i].Sha1Hash == hash {
+			return &results[i], nil
 		}
-
-		return &result, nil
 	}
 
 	return &Result{
