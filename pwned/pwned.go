@@ -78,7 +78,6 @@ func IsPwned(password string) (*Result, error) {
 		return nil, fmt.Errorf("no password provided")
 	}
 
-	// Gets the hash of the password
 	hash, err := sha1Hash(password)
 	switch {
 	case err != nil:
@@ -87,17 +86,18 @@ func IsPwned(password string) (*Result, error) {
 		return nil, fmt.Errorf("hash has insufficient length to perform check")
 	}
 
-	// Searches for hashes which have been pwned.
+	// Searches for hashes which have been pwned. The results are checked before
+	// the error because having the results containing a matching hash suffices
+	// in showing the password has pwned. In the case there is an error but
+	// no matching hash we can't determine if the password was pwned or not.
 	results, err := SearchPrefix(hash[:comparisonLength])
-	if err != nil {
-		return nil, err
-	}
-
-	// Checks if result has matching hash
 	for i := range results {
 		if results[i].Sha1Hash == hash {
 			return &results[i], nil
 		}
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	return &Result{
